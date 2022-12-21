@@ -6,8 +6,6 @@ on:
   push:
 
 jobs:
-  ECCN-Scan:
-    uses: sede-x/github-cicd-workflows/.github/workflows/eccn-scan.yaml@main
   SonarQube-Scan:
     uses: sede-x/github-cicd-workflows/.github/workflows/sonarqube-scan.yaml@main
     secrets:
