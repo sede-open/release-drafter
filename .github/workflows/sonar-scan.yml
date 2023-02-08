@@ -1,15 +1,9 @@
-name: SonarQube Scan
+
+name: Scans
 
 on:
-  workflow_call:
-    # see https://github.com/SonarSource/sonarqube-scan-action#environment-variables
-    secrets:
-      sonar_token:
-        description: "This is the token used to authenticate access to SonarQube"
-        required: true
-      sonar_host_url:
-        description: "This tells the scanner where SonarQube is hosted"
-        required: true
+  pull_request:
+  push:
 
 jobs:
   scan:
@@ -42,3 +36,4 @@ jobs:
         with:
           name: sonar-scan-log
           path: .scannerwork/report-task.txt
+        
