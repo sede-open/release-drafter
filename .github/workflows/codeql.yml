@@ -1,5 +1,5 @@
 
-name: Scans
+name: CodeQl
 
 on:
   pull_request:
