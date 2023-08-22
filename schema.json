@@ -117,7 +117,23 @@
       "default": false,
       "type": "boolean"
     },
+    "latest": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": ["", "true", "false", "legacy"]
+        },
+        {
+          "default": "true",
+          "type": "string"
+        }
+      ]
+    },
     "filter-by-commitish": {
+      "default": false,
+      "type": "boolean"
+    },
+    "include-pre-releases": {
       "default": false,
       "type": "boolean"
     },

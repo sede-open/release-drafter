@@ -146,7 +146,7 @@ module.exports = (app, { getRouter }) => {
       configName,
     })
 
-    const { isPreRelease } = getInput({ config })
+    const { isPreRelease, latest } = getInput({ config })
 
     if (config === null || disableReleaser) return
 
@@ -161,6 +161,7 @@ module.exports = (app, { getRouter }) => {
     const targetCommitish = commitish || config['commitish'] || ref
     const {
       'filter-by-commitish': filterByCommitish,
+      'include-pre-releases': includePreReleases,
       'tag-prefix': tagPrefix,
     } = config
 
@@ -178,6 +179,7 @@ module.exports = (app, { getRouter }) => {
       context,
       targetCommitish,
       filterByCommitish,
+      includePreReleases,
       tagPrefix,
     })
 
@@ -205,6 +207,7 @@ module.exports = (app, { getRouter }) => {
       tag,
       name,
       isPreRelease,
+      latest,
       shouldDraft,
       targetCommitish,
     })
@@ -260,12 +263,25 @@ function getInput({ config } = {}) {
   // the input takes precedence, because it's more easy to change at runtime
   const preRelease = core.getInput('prerelease').toLowerCase()
 
+  const isPreRelease =
+    preRelease === 'true' || (!preRelease && config.prerelease)
+
+  const latestInput = core.getInput('latest').toLowerCase()
+
+  const latest = isPreRelease
+    ? 'false'
+    : (!latestInput && config.latest) || latestInput || undefined
+
   return {
-    isPreRelease: preRelease === 'true' || (!preRelease && config.prerelease),
+    isPreRelease,
+    latest,
   }
 }
 
-function setActionOutput(releaseResponse, { body }) {
+function setActionOutput(
+  releaseResponse,
+  { body, resolvedVersion, majorVersion, minorVersion, patchVersion }
+) {
   const {
     data: {
       id: releaseId,
@@ -281,5 +297,9 @@ function setActionOutput(releaseResponse, { body }) {
   if (uploadUrl) core.setOutput('upload_url', uploadUrl)
   if (tagName) core.setOutput('tag_name', tagName)
   if (name) core.setOutput('name', name)
+  if (resolvedVersion) core.setOutput('resolved_version', resolvedVersion)
+  if (majorVersion) core.setOutput('major_version', majorVersion)
+  if (minorVersion) core.setOutput('minor_version', minorVersion)
+  if (patchVersion) core.setOutput('patch_version', patchVersion)
   core.setOutput('body', body)
 }
