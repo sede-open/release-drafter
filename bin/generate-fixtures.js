@@ -86,6 +86,8 @@ for (const repo of repos) {
         withPullRequestURL: true,
         withBaseRefName: true,
         withHeadRefName: true,
+        pullRequestLimit: 5,
+        historyLimit: 15,
       },
     })
   )

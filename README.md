@@ -8,7 +8,7 @@
 
 ## Usage
 
-You can use the [Release Drafter GitHub Action](https://github.com/marketplace/actions/release-drafter) in a [GitHub Actions Workflow](https://help.github.com/en/articles/about-github-actions) by configuring a YAML-based workflow file, e.g. `.github/workflows/release-drafter.yml`, with the following:
+You can use the [Release Drafter GitHub Action](https://github.com/marketplace/actions/release-drafter) in a [GitHub Actions Workflow](https://help.github.com/en/actions/about-github-actions) by configuring a YAML-based workflow file, e.g. `.github/workflows/release-drafter.yml`, with the following:
 
 ```yaml
 name: Release Drafter
@@ -17,7 +17,9 @@ on:
   push:
     # branches to consider in the event; optional, defaults to all
     branches:
+      - main
       - master
+
   # pull_request event is required only for autolabeler
   pull_request:
     # Only following types are handled by the action, but one can default to all as well
@@ -45,7 +47,7 @@ jobs:
       #    echo "GHE_HOST=${GITHUB_SERVER_URL##https:\/\/}" >> $GITHUB_ENV
 
       # Drafts your next Release notes as Pull Requests are merged into "master"
-      - uses: release-drafter/release-drafter@v5
+      - uses: release-drafter/release-drafter@v6
         # (Optional) specify config name to use, relative to .github/. Default: release-drafter.yml
         # with:
         #   config-name: my-config.yml
@@ -144,6 +146,9 @@ You can configure Release Drafter using the following key in your `.github/relea
 | `commitish`                | Optional | The release target, i.e. branch or commit it should point to. Default: the ref that release-drafter runs for, e.g. `refs/heads/master` if configured to run on pushes to `master`. |
 | `filter-by-commitish`      | Optional | Filter previous releases to consider only those with the target matching `commitish`. Default: `false`.                                                                            |
 | `include-paths`            | Optional | Restrict pull requests included in the release notes to only the pull requests that modified any of the paths in this array. Supports files and directories. Default: `[]`         |
+| `pull-request-limit`       | Optional | Limit for associatedPullRequests API call. Use this when working with long-lived non-default branches. See #1354. Default: `5`                                                     |
+| `history-limit`            | Optional | Size of the pagination window when walking the repo. Can avoid erratic 502s from Github. Default: `15`                                                                             |
+| `initial-commits-since`    | Optional | When drafting your first release, limit the amount of scanned commits. Expects an ISO 8601 date, ex: `"2025-06-18T10:29:51Z"`. Default: `""` (unlimited)                           |
 
 Release Drafter also supports [Probot Config](https://github.com/probot/probot-config), if you want to store your configuration files in a central repository. This allows you to share configurations between projects, and create a organization-wide configuration file by creating a repository named `.github` with the file `.github/release-drafter.yml`.
 
@@ -227,7 +232,7 @@ You can use any of the following variables in `change-template`:
 
 ## References
 
-**Note**: This is only revelant for GitHub app users as `references` is ignored when running as GitHub action due to GitHub workflows more powerful [`on` conditions](https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#on)
+**Note**: This is only relevant for GitHub app users as `references` is ignored when running as GitHub action due to GitHub workflows more powerful [`on` conditions](https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#on)
 
 References takes an list and accepts strings and regex.
 If none are specified, we default to the repository’s default branch usually master.
@@ -285,7 +290,7 @@ Pull requests with the label "skip-changelog" will now be excluded from the rele
 
 ## Include Pull Requests
 
-With the `include-labels` option you can specify pull requests from the release notes using labels. Only pull requests that have the configured labels will be included in the pull request. For example, append the following to your `.github/release-drafter.yml` file:
+With the `include-labels` option you can specify pull requests from the release notes using labels. Only pull requests that have the configured labels will be included in the release draft. For example, append the following to your `.github/release-drafter.yml` file:
 
 ```yml
 include-labels:
@@ -372,19 +377,26 @@ The Release Drafter GitHub Action accepts a number of optional inputs directly i
 | `commitish`             | A string specifying the target branch for the release being created.                                                                                                                                                                                                                                                                                               |
 | `header`                | A string that would be added before the template body.                                                                                                                                                                                                                                                                                                             |
 | `footer`                | A string that would be added after the template body.                                                                                                                                                                                                                                                                                                              |
+| `initial-commits-since` | When drafting your first release, limit the amount of scanned commits. Expects an ISO 8601 date, ex: `"2025-06-18T10:29:51Z"`. Default: `""` (unlimited)                                                                                                                                                                                                           |
+| `disable-releaser`      | A boolean indicating whether the releaser mode is disabled.                                                                                                                                                                                                                                                                                                        |
+| `disable-autolabeler`   | A boolean indicating whether the autolabeler mode is disabled.                                                                                                                                                                                                                                                                                                     |
 
 ## Action Outputs
 
 The Release Drafter GitHub Action sets a couple of outputs which can be used as inputs to other Actions in the workflow ([example](https://github.com/actions/upload-release-asset#example-workflow---upload-a-release-asset)).
 
-| Output       | Description                                                                                                                                                                                                                   |
-| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `id`         | The ID of the release that was created or updated.                                                                                                                                                                            |
-| `name`       | The name of this release.                                                                                                                                                                                                     |
-| `tag_name`   | The name of the tag associated with this release.                                                                                                                                                                             |
-| `body`       | The body of the drafted release, useful if it needs to be included in files.                                                                                                                                                  |
-| `html_url`   | The URL users can navigate to in order to view the release. i.e. `https://github.com/octocat/Hello-World/releases/v1.0.0`.                                                                                                    |
-| `upload_url` | The URL for uploading assets to the release, which could be used by GitHub Actions for additional uses, for example the [`@actions/upload-release-asset GitHub Action`](https://www.github.com/actions/upload-release-asset). |
+| Output             | Description                                                                                                                                                                                                                   |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`               | The ID of the release that was created or updated.                                                                                                                                                                            |
+| `name`             | The name of this release.                                                                                                                                                                                                     |
+| `tag_name`         | The name of the tag associated with this release.                                                                                                                                                                             |
+| `body`             | The body of the drafted release, useful if it needs to be included in files.                                                                                                                                                  |
+| `html_url`         | The URL users can navigate to in order to view the release. i.e. `https://github.com/octocat/Hello-World/releases/v1.0.0`.                                                                                                    |
+| `upload_url`       | The URL for uploading assets to the release, which could be used by GitHub Actions for additional uses, for example the [`@actions/upload-release-asset GitHub Action`](https://www.github.com/actions/upload-release-asset). |
+| `resolved_version` | Version resolved by [Version Resolver](#version-resolver). i.e. `6.3.1`                                                                                                                                                       |
+| `major_version`    | Major part of resolved version by [Version Resolver](#version-resolver). i.e. `6` for version `6.3.1`                                                                                                                         |
+| `minor_version`    | Minor part of resolved version by [Version Resolver](#version-resolver). i.e. `3` for version `6.3.1`                                                                                                                         |
+| `patch_version`    | Patch part of resolved version by [Version Resolver](#version-resolver). i.e. `1` for version `6.3.1`                                                                                                                         |
 
 ## Developing
 
@@ -392,13 +404,13 @@ If you have Node v10+ installed locally, you can run the tests, and a local app,
 
 ```sh
 # Install dependencies
-yarn install
+npm install
 
 # Run the tests
-yarn test
+npm run test
 
 # Run the app locally
-yarn test:watch
+npm run test:watch
 ```
 
 Once you've started the app, visit `localhost:3000` and you'll get [step-by-step instructions](https://probot.github.io/docs/development/#configuring-a-github-app) for installing it in your GitHub account so you can start pushing commits and testing it locally.
@@ -435,6 +447,5 @@ The command does the following:
 - Runs the `postversion` npm script in [package.json](package.json), which:
   - Runs test
   - Pushes the tag to GitHub, which triggers GitHub Action that does the following:
-    - Push GitHub app to Heroku
     - Releases NPM
     - Publish the Release Draft!

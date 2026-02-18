@@ -1,46 +1,32 @@
 name: Release
+
 on:
   push:
     tags:
       - v*.*.*
+
+permissions:
+  id-token: write
+  contents: write
 
 env:
   HUSKY: '0'
 
 jobs:
   build:
+    if: github.repository == 'release-drafter/release-drafter'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+      - uses: ./.github/actions/common-setup
 
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-          cache: yarn
-          registry-url: https://registry.npmjs.org
+      - name: test
+        run: npm run test
 
-      - name: yarn install
-        run: yarn install --frozen-lockfile
-
-      - name: yarn test
-        run: yarn test
-
-      - name: Deploy to Heroku
-        env:
-          HEROKU_API_TOKEN: ${{ secrets.HEROKU_API_TOKEN }}
-          HEROKU_APP_NAME: release-drafter
-        run: |
-          git fetch origin master
-          git push https://heroku:$HEROKU_API_TOKEN@git.heroku.com/$HEROKU_APP_NAME.git origin/master:master --force
-
-      - name: yarn publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPMJS_TOKEN }}
-        run: yarn publish --access public
+      - name: publish
+        run: npm publish # Publishes to npmjs, using package.json's version
 
       - name: version
         id: version

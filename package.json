@@ -1,11 +1,14 @@
 {
   "name": "release-drafter-github-app",
   "type": "commonjs",
-  "version": "6.0.0",
+  "version": "6.2.0",
   "description": "A GitHub app that draft releases based on pull-request labels",
   "author": "Tim Lucas <t@toolmantim.com> (https://github.com/toolmantim)",
   "license": "ISC",
-  "repository": "https://github.com/release-drafter/release-drafter",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/release-drafter/release-drafter.git"
+  },
   "scripts": {
     "build": "ncc build action.js --target es2021",
     "start": "probot run ./index.js",
@@ -17,7 +20,6 @@
     "prettier": "prettier --write **/*.{js,md,json,yml}",
     "postversion": "npm run test && git push && git push --tags",
     "open-releases": "open \"$(node -e 'console.log(`${require(\"./package.json\").repository}/releases`)')\"",
-    "deploy": "git push -f heroku \"$(node -e 'console.log(`v${require(\"./package.json\").version}`)')\":master",
     "prepare": "husky install"
   },
   "dependencies": {
@@ -25,31 +27,32 @@
     "@probot/adapter-github-actions": "3.1.1",
     "cli-table3": "0.6.2",
     "compare-versions": "4.1.3",
-    "deepmerge": "4.2.2",
+    "deepmerge": "4.3.1",
     "escape-string-regexp": "4.0.0",
     "ignore": "5.2.0",
     "joi": "17.6.0",
-    "lodash": "4.17.21",
+    "lodash": "4.17.23",
     "probot": "12.2.5",
     "regex-parser": "2.2.11",
     "semver": "7.3.7"
   },
   "devDependencies": {
-    "@koa-lite/joi-schema": "0.0.1",
-    "@vercel/ncc": "0.34.0",
+    "@vercel/ncc": "0.38.4",
     "eslint": "8.20.0",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-prettier": "4.2.1",
     "eslint-plugin-unicorn": "^43.0.2",
     "husky": "8.0.1",
     "jest": "28.1.3",
+    "joi-to-json": "^4.3.1",
     "lint-staged": "13.0.3",
     "mocked-env": "^1.3.5",
     "nock": "13.2.9",
-    "node-fetch": "2.6.7",
+    "node-fetch": "2.7.0",
     "prettier": "2.7.1"
   },
   "engines": {
+    "npm": ">=11.5.2",
     "node": ">=20.0.0"
   },
   "jest": {
@@ -60,5 +63,6 @@
       "index.js",
       "lib/**"
     ]
-  }
+  },
+  "packageManager": "npm@11.5.2"
 }

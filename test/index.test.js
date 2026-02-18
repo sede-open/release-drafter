@@ -2424,6 +2424,150 @@ describe('release-drafter', () => {
     })
   })
 
+  describe('with pull-request-limit config', () => {
+    it('uses the correct default when not specified', async () => {
+      getConfigMock()
+
+      nock('https://api.github.com')
+        .post('/graphql', (body) => {
+          if (
+            body.query.includes('query findCommitsWithAssociatedPullRequests')
+          ) {
+            expect(body.variables.pullRequestLimit).toBe(5)
+            return true
+          }
+          return false
+        })
+        .reply(200, graphqlCommitsNoPRsPayload)
+
+      nock('https://api.github.com')
+        .get(
+          '/repos/toolmantim/release-drafter-test-project/releases?per_page=100'
+        )
+        .reply(200, [])
+
+      nock('https://api.github.com')
+        .post('/repos/toolmantim/release-drafter-test-project/releases')
+        .reply(200, releasePayload)
+
+      const payload = pushPayload
+
+      await probot.receive({
+        name: 'push',
+        payload,
+      })
+
+      expect.assertions(1)
+    })
+
+    it('requests the specified number of associated PRs', async () => {
+      getConfigMock('config-with-pull-request-limit.yml')
+
+      nock('https://api.github.com')
+        .post('/graphql', (body) => {
+          if (
+            body.query.includes('query findCommitsWithAssociatedPullRequests')
+          ) {
+            expect(body.variables.pullRequestLimit).toBe(34)
+            return true
+          }
+          return false
+        })
+        .reply(200, graphqlCommitsNoPRsPayload)
+
+      nock('https://api.github.com')
+        .get(
+          '/repos/toolmantim/release-drafter-test-project/releases?per_page=100'
+        )
+        .reply(200, [])
+
+      nock('https://api.github.com')
+        .post('/repos/toolmantim/release-drafter-test-project/releases')
+        .reply(200, releasePayload)
+
+      const payload = pushPayload
+
+      await probot.receive({
+        name: 'push',
+        payload,
+      })
+
+      expect.assertions(1)
+    })
+  })
+
+  describe('with history-limit config', () => {
+    it('uses the correct default when not specified', async () => {
+      getConfigMock()
+
+      nock('https://api.github.com')
+        .post('/graphql', (body) => {
+          if (
+            body.query.includes('query findCommitsWithAssociatedPullRequests')
+          ) {
+            expect(body.variables.historyLimit).toBe(15)
+            return true
+          }
+          return false
+        })
+        .reply(200, graphqlCommitsNoPRsPayload)
+
+      nock('https://api.github.com')
+        .get(
+          '/repos/toolmantim/release-drafter-test-project/releases?per_page=100'
+        )
+        .reply(200, [])
+
+      nock('https://api.github.com')
+        .post('/repos/toolmantim/release-drafter-test-project/releases')
+        .reply(200, releasePayload)
+
+      const payload = pushPayload
+
+      await probot.receive({
+        name: 'push',
+        payload,
+      })
+
+      expect.assertions(1)
+    })
+
+    it('requests the specified number of associated PRs', async () => {
+      getConfigMock('config-with-history-limit.yml')
+
+      nock('https://api.github.com')
+        .post('/graphql', (body) => {
+          if (
+            body.query.includes('query findCommitsWithAssociatedPullRequests')
+          ) {
+            expect(body.variables.historyLimit).toBe(42)
+            return true
+          }
+          return false
+        })
+        .reply(200, graphqlCommitsNoPRsPayload)
+
+      nock('https://api.github.com')
+        .get(
+          '/repos/toolmantim/release-drafter-test-project/releases?per_page=100'
+        )
+        .reply(200, [])
+
+      nock('https://api.github.com')
+        .post('/repos/toolmantim/release-drafter-test-project/releases')
+        .reply(200, releasePayload)
+
+      const payload = pushPayload
+
+      await probot.receive({
+        name: 'push',
+        payload,
+      })
+
+      expect.assertions(1)
+    })
+  })
+
   describe('config error handling', () => {
     it('schema error', async () => {
       getConfigMock('config-with-schema-error.yml')
@@ -3380,6 +3524,113 @@ describe('release-drafter', () => {
 
         expect.assertions(1)
       })
+    })
+  })
+
+  describe('with initial-commits-since', () => {
+    it('use commits since from last release', async () => {
+      getConfigMock('config-with-commits-since.yml')
+
+      nock('https://api.github.com')
+        .post('/graphql', (body) => {
+          if (
+            body.query.includes('query findCommitsWithAssociatedPullRequests')
+          ) {
+            expect(body.variables.since).toBe('2018-06-29T05:45:15Z')
+            return true
+          }
+          return false
+        })
+        .reply(200, graphqlCommitsNoPRsPayload)
+
+      nock('https://api.github.com')
+        .get(
+          '/repos/toolmantim/release-drafter-test-project/releases?per_page=100'
+        )
+        .reply(200, [releasePayload])
+
+      nock('https://api.github.com')
+        .post('/repos/toolmantim/release-drafter-test-project/releases')
+        .reply(200, releasePayload)
+
+      const payload = pushPayload
+
+      await probot.receive({
+        name: 'push',
+        payload,
+      })
+
+      expect.assertions(1)
+    })
+
+    it('use commits since from config', async () => {
+      getConfigMock('config-with-commits-since.yml')
+
+      nock('https://api.github.com')
+        .post('/graphql', (body) => {
+          if (
+            body.query.includes('query findCommitsWithAssociatedPullRequests')
+          ) {
+            expect(body.variables.since).toBe('2025-06-18T10:29:51.000Z')
+            return true
+          }
+          return false
+        })
+        .reply(200, graphqlCommitsNoPRsPayload)
+
+      nock('https://api.github.com')
+        .get(
+          '/repos/toolmantim/release-drafter-test-project/releases?per_page=100'
+        )
+        .reply(200, [])
+
+      nock('https://api.github.com')
+        .post('/repos/toolmantim/release-drafter-test-project/releases')
+        .reply(200, releasePayload)
+
+      const payload = pushPayload
+
+      await probot.receive({
+        name: 'push',
+        payload,
+      })
+
+      expect.assertions(1)
+    })
+
+    it('use empty commit since', async () => {
+      getConfigMock('config.yml')
+
+      nock('https://api.github.com')
+        .post('/graphql', (body) => {
+          if (
+            body.query.includes('query findCommitsWithAssociatedPullRequests')
+          ) {
+            expect(body.variables.since).toBeUndefined()
+            return true
+          }
+          return false
+        })
+        .reply(200, graphqlCommitsNoPRsPayload)
+
+      nock('https://api.github.com')
+        .get(
+          '/repos/toolmantim/release-drafter-test-project/releases?per_page=100'
+        )
+        .reply(200, [])
+
+      nock('https://api.github.com')
+        .post('/repos/toolmantim/release-drafter-test-project/releases')
+        .reply(200, releasePayload)
+
+      const payload = pushPayload
+
+      await probot.receive({
+        name: 'push',
+        payload,
+      })
+
+      expect.assertions(1)
     })
   })
 })
