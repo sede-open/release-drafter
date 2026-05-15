@@ -1,0 +1,18 @@
+version: 2
+# Dependabot version updates are explicitly disabled for all known package
+# ecosystems. Ecosystems not listed here are not monitored by Dependabot at all.
+# To enable updates for an ecosystem, remove its open-pull-requests-limit or set
+# it to a value greater than 0.
+# Note: Dependabot security updates are configured separately and remain enabled.
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
